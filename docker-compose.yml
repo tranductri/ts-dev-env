@@ -1,82 +1,110 @@
-version: '3'
-services:
-    nginx:
-        container_name: nginx
-        image: nginx:1.12.1
-        ports:
-            - "8000:8000"
-            - "7000:7000"
-            - "6000:6000"
-            - "5000:5000"
-            - "4000:4000"
-            - "3000:3000"
-            - "2000:2000"
-            - "1000:1000"
-        volumes:
-            - ./services/local-service/site.conf:/etc/nginx/conf.d/local-service.conf
-            - ~/working-space/emenulocalservice:/var/www/html/local-service
-            - ./services/cms/site.conf:/etc/nginx/conf.d/cms.conf
-            - ~/working-space/cms:/var/www/html/cms
-            - ./services/master-data-sync/site.conf:/etc/nginx/conf.d/master-data-sync.conf
-            - ~/working-space/master-data-sync:/var/www/html/master-data-sync
-            - ./services/crm/site.conf:/etc/nginx/conf.d/crm.conf
-            - ~/working-space/crm:/var/www/html/crm
-            - ./services/consumer-service/site.conf:/etc/nginx/conf.d/consumer-service.conf
-            - ~/working-space/consumer-service:/var/www/html/consumer-service
-            - ./services/test/site.conf:/etc/nginx/conf.d/test.conf
-            - ~/working-space/test:/var/www/html/test
-            - ./services/nginx/log:/var/log/nginx
-        links:
-            - master-data-sync
-    mysql:
-        image: mysql:5.6.37
-        container_name: mysql
-        ports:
-            - 3306:3306
-        environment:
-            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-            MYSQL_ROOT_PASSWORD: ""
-        volumes:
-            - ./services/mysql/data:/var/lib/mysql
-    local-service:
-        container_name: local-service
-        build: ./services/php
-        volumes:
-            - ~/working-space/emenulocalservice:/var/www/html/local-service
-        links:
-            - mysql
-    crm:
-        container_name: crm
-        build: ./services/php
-        volumes:
-            - ~/working-space/crm:/var/www/html/crm
-        links:
-            - mysql
-    master-data-sync:
-        container_name: master-data-sync
-        build: ./services/php
-        volumes:
-            - ~/working-space/master-data-sync:/var/www/html/master-data-sync
-        links:
-            - mysql    
-    cms:
-        container_name: cms
-        build: ./services/php
-        volumes:
-            - ~/working-space/cms:/var/www/html/cms
-        links:
-            - mysql
-    consumer-service:
-        container_name: consumer-service
-        build: ./services/php
-        volumes:
-            - ~/working-space/consumer-service:/var/www/html/consumer-service
-        links:
-            - mysql    
-    demo:
-        container_name: demo
-        build: ./services/php
-        volumes:
-            - ~/working-space/test:/var/www/html/test
-        links:
-            - mysql
+
+# mongodb:
+#     container_name: mongodb
+#     build: ./services/mongodb
+#     environment:
+#       - MONGO_DATA_DIR=/data/db
+#       - MONGO_LOG_DIR=/dev/null
+#     volumes:
+#       - ./services/mongodb/data/db:/data/db
+#     ports:
+#         - 27017:27017
+#     command: mongod --smallfiles --logpath=/dev/null # --quiet
+mysql:
+    image: mysql:5.6.37
+    container_name: mysql
+    ports:
+        - 3306:3306
+    environment:
+        MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        MYSQL_ROOT_PASSWORD: ""
+    volumes:
+        - ./services/mysql/data:/var/lib/mysql
+
+nginx:
+    container_name: nginx
+    image: nginx:1.12.1
+    ports:
+        - "9000:9000"
+        - "8000:8000"
+        - "7000:7000"
+        - "6000:6000"
+        - "5000:5000"
+        - "4000:4000"
+        - "3000:3000"
+        - "3333:3333"
+        - "2000:2000"
+        - "1000:1000"
+    volumes:
+        - ./services/crm/site.conf:/etc/nginx/conf.d/crm.conf
+        - ~/working-space/crm:/var/www/html/crm
+        - ./services/local-service/site.conf:/etc/nginx/conf.d/local-service.conf
+        - ~/working-space/emenulocalservice:/var/www/html/local-service
+        - ./services/test/site.conf:/etc/nginx/conf.d/test.conf
+        - ~/working-space/test/dashboard:/var/www/html/test
+        - ./services/cms/site.conf:/etc/nginx/conf.d/cms.conf
+        - ~/working-space/cms:/var/www/html/cms
+        - ./services/master-data-sync/site.conf:/etc/nginx/conf.d/master-data-sync.conf
+        - ~/working-space/master-data-sync:/var/www/html/master-data-sync
+        - ./services/consumer-service/site.conf:/etc/nginx/conf.d/consumer-service.conf
+        - ~/working-space/consumer-service:/var/www/html/consumer-service
+        - ./services/nginx/log:/var/log/nginx
+        - ~/working-space/dashboard:/var/www/html/dashboard
+        - ./services/dashboard/site.conf:/etc/nginx/conf.d/dashboard.conf
+    links:
+        - dashboard
+        - crm
+        - local-service
+        - demo
+        - cms
+        - master-data-sync
+        - consumer-service
+dashboard:
+    container_name: dashboard
+    build: ./services/php
+    volumes:
+        - ~/working-space/dashboard:/var/www/html/dashboard
+    links:
+        - mysql
+crm:
+    container_name: crm
+    build: ./services/php
+    volumes:
+        - ~/working-space/crm:/var/www/html/crm
+    links:
+        - mysql
+local-service:
+    container_name: local-service
+    build: ./services/php
+    volumes:
+        - ~/working-space/emenulocalservice:/var/www/html/local-service
+    links:
+        - mysql
+master-data-sync:
+    container_name: master-data-sync
+    build: ./services/php
+    volumes:
+        - ~/working-space/master-data-sync:/var/www/html/master-data-sync
+    links:
+        - mysql  
+cms:
+    container_name: cms
+    build: ./services/php
+    volumes:
+        - ~/working-space/cms:/var/www/html/cms
+    links:
+        - mysql
+consumer-service:
+    container_name: consumer-service
+    build: ./services/php
+    volumes:
+        - ~/working-space/consumer-service:/var/www/html/consumer-service
+    links:
+        - mysql   
+demo:
+    container_name: demo
+    build: ./services/php
+    volumes:
+        - ~/working-space/test/dashboard:/var/www/html/test
+    links:
+        - mysql
